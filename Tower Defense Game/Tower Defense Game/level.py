@@ -1,23 +1,41 @@
-"""This is the level class"""
 import pygame
+from enemy import Enemy
+from tower import BasicTower, SniperTower, MoneyTower
 
-from tower import BasicTower, SniperTower
 
 class Level:
     """This is the level class"""
     def __init__(self, game):
         self.game = game
+        self.enemies = pygame.sprite.Group()
         self.towers = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
-       
+        self.waves = [
+            [{'path': self.game.settings.enemy_path, 'speed': 1, 'health': 100, 'image_path': 'assets/enemies/basic_enemy.png'}] * 5,
+            [{'path': self.game.settings.enemy_path, 'speed': 1.5, 'health': 150, 'image_path': 'assets/enemies/fast_enemy.png'}] * 7,
+            [{'path': self.game.settings.enemy_path, 'speed': 0.75, 'health': 200, 'image_path': 'assets/enemies/strong_enemy.png'}] * 4,
+        ]
         self.current_wave = 0
+        self.spawned_enemies = 0
         self.spawn_delay = 1000
         self.last_spawn_time = pygame.time.get_ticks()
         self.all_waves_complete = False
         self.start_next_wave()
         self.font = pygame.font.SysFont("Arial", 24)
 
+    def start_next_wave(self):
+        """This is the start_next_wave method"""
+        if self.current_wave < len(self.waves):
+            self.spawned_enemies = 0
+            self.spawn_next_enemy()
 
+    def spawn_next_enemy(self):
+        """This is the spawn_next_enemy method"""
+        if self.spawned_enemies < len(self.waves[self.current_wave]):
+            enemy_info = self.waves[self.current_wave][self.spawned_enemies]
+            new_enemy = Enemy(**enemy_info, game=self.game)
+            self.enemies.add(new_enemy)
+            self.spawned_enemies += 1
 
     def attempt_place_tower(self, mouse_pos, tower_type):
         """This is the attempt_place_tower method"""
